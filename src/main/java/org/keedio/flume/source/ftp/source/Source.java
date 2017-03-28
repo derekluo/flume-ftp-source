@@ -49,7 +49,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
     private FTPSourceEventListener listener = new FTPSourceEventListener();
     private SourceCounter sourceCounter;
 
-    
+
     /**
      * Request keedioSource to the factory
      *
@@ -84,11 +84,11 @@ public class Source extends AbstractSource implements Configurable, PollableSour
      */
     @Override
     public PollableSource.Status process() throws EventDeliveryException {
-        
-        try {            
+
+        try {
             LOGGER.info("Actual dir:  " + keedioSource.getDirectoryserver() + " files: "
                     + keedioSource.getFileList().size());
-            
+
             discoverElements(keedioSource, keedioSource.getDirectoryserver(), "", 0);
             keedioSource.cleanList(); //clean list according existing actual files
             keedioSource.getExistFileList().clear();
@@ -128,7 +128,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
      * @return void
      */
     @Override
-    public synchronized void start() { 
+    public synchronized void start() {
         LOGGER.info("Starting Keedio source ...", this.getName());
         LOGGER.info("Source {} starting. Metrics: {}", getName(), sourceCounter);
         super.start();
@@ -167,7 +167,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
         String dirToList = parentDir;
         if (!("").equals(currentDir)){
             dirToList += "/" + currentDir;
-        } 
+        }
         List<T> list = keedioSource.listElements(dirToList);
         if (!(list.isEmpty())) {
 
@@ -184,7 +184,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
 
                 } else if (keedioSource.isFile(element)) { //element is a regular file
                     keedioSource.changeToDirectory(dirToList);
-                    keedioSource.getExistFileList().add(dirToList + "/" + elementName);  //control of deleted files in server  
+                    keedioSource.getExistFileList().add(dirToList + "/" + elementName);  //control of deleted files in server
 
                     //test if file is new in collection
                     if (!(keedioSource.getFileList().containsKey(dirToList + "/" + elementName))) { //new file
@@ -214,7 +214,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                         inputStream = keedioSource.getInputStream(element);
                         listener.fileStreamRetrieved();
 
-                        if (!readStream(inputStream, position)) {
+                        if (!readStream(inputStream, position, elementName)) {
                             inputStream = null;
                         }
 
@@ -253,8 +253,8 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                 }
                 keedioSource.changeToDirectory(parentDir);
 
-            } 
-        } 
+            }
+        }
     }
 
     /**
@@ -265,8 +265,9 @@ public class Source extends AbstractSource implements Configurable, PollableSour
      * @return boolean
      * @param inputStream
      * @param position
+     * @param fileName
      */
-    public boolean readStream(InputStream inputStream, long position) {
+    public boolean readStream(InputStream inputStream, long position, String fileName) {
         if (inputStream == null) {
             return false;
         }
@@ -280,7 +281,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                     String line = null;
 
                     while ((line = in.readLine()) != null) {
-                        processMessage(line.getBytes());
+                        processMessage(fileName, line.getBytes());
                     }
 
                 }
@@ -300,7 +301,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                     try (ByteArrayOutputStream baostream = new ByteArrayOutputStream(chunkSize)) {
                         baostream.write(bytesArray, 0, bytesRead);
                         byte[] data = baostream.toByteArray();
-                        processMessage(data);
+                        processMessage(fileName, data);
                     }
                 }
 
@@ -317,14 +318,19 @@ public class Source extends AbstractSource implements Configurable, PollableSour
     /**
      * @void process last appended data to files
      * @param lastInfo byte[]
+     * @param fileName String
      */
-    public void processMessage(byte[] lastInfo) {
-        byte[] message = lastInfo;
+    public void processMessage(String fileName, byte[] lastInfo) {
         Event event = new SimpleEvent();
+
         Map<String, String> headers = new HashMap<>();
+        headers.put("fileName", fileName);
         headers.put("timestamp", String.valueOf(System.currentTimeMillis()));
-        event.setBody(message);
         event.setHeaders(headers);
+
+        byte[] message = lastInfo;
+        event.setBody(message);
+
         try {
             getChannelProcessor().processEvent(event);
         } catch (ChannelException e) {
