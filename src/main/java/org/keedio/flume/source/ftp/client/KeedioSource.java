@@ -222,11 +222,11 @@ public abstract class KeedioSource<T> {
                 out.writeObject((HashMap) getFileList());
             }
 
-            LOGGER.info("Map file saved, " + getAbsolutePath() + ", " + getFileList().size());
+            LOGGER.info("FileMap saved, " + getAbsolutePath() + ", " + getFileList().size());
         } catch (FileNotFoundException e) {
-            LOGGER.error("Error saving map File", e);
+            LOGGER.error("FileMap FileNotfoundexception", e);
         } catch (IOException e) {
-            LOGGER.error("Error saving map IO:", e);
+            LOGGER.error("FileMap IOException:", e);
         }
     }
 
@@ -243,7 +243,7 @@ public abstract class KeedioSource<T> {
             map = (HashMap) in.readObject();
         }
 
-        LOGGER.info("Map file loaded: " + name + "," + map.size());
+        LOGGER.info("FileMap loaded: " + name + ", " + map.size());
         return map;
     }
 
@@ -251,12 +251,18 @@ public abstract class KeedioSource<T> {
      * @void, delete file from hashmaps if deleted from server
      */
     public void cleanList() {
+        int oldSize = getFileList().size();
         for (Iterator<String> iter = this.getFileList().keySet().iterator(); iter.hasNext();) {
             final String filename = iter.next();
             if (!(existFileList.contains(filename))) {
                 iter.remove();
             }
         }
+        int newSize = getFileList().size();
+
+        this.saveMap();
+
+        LOGGER.info("FileMap stale files cleaned: " + oldSize + " => " + newSize);
     }
 
     /**
@@ -267,14 +273,13 @@ public abstract class KeedioSource<T> {
         try {
             if (Files.exists(file1)) {
                 setFileList(loadMap(file1.toString()));
-                LOGGER.info("Found previous map of files flumed: " + file1.toString());
+                LOGGER.info("FileMap founded: " + file1.toString());
             } else {
-                LOGGER.info("Not found preivous map of files flumed");
-
+                LOGGER.info("FileMap NOT founded: " + file1);
             }
 
         } catch (IOException | ClassNotFoundException e) {
-            LOGGER.info("Exception thrown checking previous map ", e);
+            LOGGER.info("FileMap Exception while checking previous map ", e);
         }
     }
 

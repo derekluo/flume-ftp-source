@@ -45,10 +45,9 @@ public class Source extends AbstractSource implements Configurable, PollableSour
     private static final Logger LOGGER = LoggerFactory.getLogger(Source.class);
     private static final short ATTEMPTS_MAX = 3; //  max limit attempts reconnection
     private static final long EXTRA_DELAY = 10000;
-    private int counterConnect = 0;
+    private int counterConnect = 1;
     private FTPSourceEventListener listener = new FTPSourceEventListener();
     private SourceCounter sourceCounter;
-
 
     /**
      * Request keedioSource to the factory
@@ -86,14 +85,15 @@ public class Source extends AbstractSource implements Configurable, PollableSour
     public PollableSource.Status process() throws EventDeliveryException {
 
         try {
-            LOGGER.info("Actual dir:  " + keedioSource.getDirectoryserver() + ", files: "
+            LOGGER.info("Processing: (dir: " + keedioSource.getDirectoryserver() + "; files: "
                         + keedioSource.getFileList().size() + ", " + keedioSource.getExistFileList().size());
 
+            keedioSource.getExistFileList().clear();
             discoverElements(keedioSource, keedioSource.getDirectoryserver(), "", 0);
             keedioSource.cleanList(); //clean list according existing actual files
-            keedioSource.getExistFileList().clear();
+
         } catch (IOException e) {
-            LOGGER.error("Exception thrown in proccess, try to reconnect " + counterConnect, e);
+            LOGGER.error("Exception thrown in process, try to reconnect " + counterConnect, e);
 
             if (!keedioSource.connect()) {
                 counterConnect++;
@@ -101,7 +101,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                 keedioSource.checkPreviousMap();
             }
 
-            if (counterConnect < ATTEMPTS_MAX) {
+            if (counterConnect <= ATTEMPTS_MAX) {
                 process();
             } else {
                 LOGGER.error("Server connection closed without indication, reached limit reconnections " + counterConnect);
@@ -113,7 +113,6 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                 }
             }
         }
-        keedioSource.saveMap();
 
         try {
             Thread.sleep(keedioSource.getRunDiscoverDelay());
@@ -140,12 +139,12 @@ public class Source extends AbstractSource implements Configurable, PollableSour
      */
     @Override
     public synchronized void stop() {
-        keedioSource.saveMap();
         if (keedioSource.isConnected()) {
             keedioSource.disconnect();
         }
         sourceCounter.stop();
         super.stop();
+        LOGGER.info("Keedio source stopped: ", this.getName());
     }
 
     /**
@@ -161,14 +160,17 @@ public class Source extends AbstractSource implements Configurable, PollableSour
      */
     // @SuppressWarnings("UnnecessaryContinue")
     public <T> void discoverElements(KeedioSource keedioSource, String parentDir, String currentDir, int level) throws IOException {
-
         long position = 0L;
 
         String dirToList = parentDir;
         if (!("").equals(currentDir)){
             dirToList += "/" + currentDir;
         }
+
         List<T> list = keedioSource.listElements(dirToList);
+
+        LOGGER.info("discoverElements: " + dirToList + ", " + level + ", " + list.size());
+
         if (!(list.isEmpty())) {
 
             for (T element : list) {
@@ -178,7 +180,6 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                 }
 
                 if (keedioSource.isDirectory(element)) {
-                    LOGGER.info("[" + elementName + "]");
                     keedioSource.changeToDirectory(parentDir);
                     discoverElements(keedioSource, dirToList, elementName, level + 1);
 
@@ -190,22 +191,26 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                     if (!(keedioSource.getFileList().containsKey(dirToList + "/" + elementName))) { //new file
                         sourceCounter.incrementFilesCount(); //include all files, even not yet processed
                         position = 0L;
-                        LOGGER.info("Discovered: " + elementName + " ,size: " + keedioSource.getObjectSize(element));
+                        LOGGER.info("Discovered: " + elementName + ", size: " + keedioSource.getObjectSize(element));
                     } else { //known file
                         long prevSize = (long) keedioSource.getFileList().get(dirToList + "/" + elementName);
                         position = prevSize;
-                        long dif = keedioSource.getObjectSize(element) - (long) keedioSource.getFileList().get(dirToList + "/" + elementName);
+                        long diff = keedioSource.getObjectSize(element) - (long) keedioSource.getFileList().get(dirToList + "/" + elementName);
 
-                        if (dif > 0) {
-                            LOGGER.info("Modified: " + elementName + " ,size: " + dif);
-                        } else if (dif < 0) { //known and full modified
-                            keedioSource.getExistFileList().remove(dirToList + "/" + elementName); //will be rediscovered as new file
+                        if (0 == diff) {
+                            LOGGER.info("Same: " + elementName);
+                            continue;
+                        } else if (diff < 0) {
+                            LOGGER.info("Shrinked: " + elementName + ", diff: " + diff);
+
+                            keedioSource.getFileList().remove(dirToList + "/" + elementName); //will be rediscovered as new file
                             keedioSource.saveMap();
-                            continue;
-                        } else {
-                            continue;
-                        }
+                            LOGGER.info("FileMap file removed: " + dirToList + "/" + elementName);
 
+                            continue;
+                        } else { // diff > 0
+                            LOGGER.info("Modified: " + elementName + ", diff: " + diff);
+                        }
                     } //end if known file
 
                     //common for all regular files
@@ -222,6 +227,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                         if (success) {
                             keedioSource.getFileList().put(dirToList + "/" + elementName, keedioSource.getObjectSize(element));
                             keedioSource.saveMap();
+                            LOGGER.info("KeedioSourceFileList file added: " + dirToList + "/" + elementName);
 
                             if (position != 0) {
                                 sourceCounter.incrementCountModProc();
