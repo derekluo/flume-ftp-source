@@ -260,9 +260,8 @@ public abstract class KeedioSource<T> {
         }
         int newSize = getFileList().size();
 
+        LOGGER.info("FileMap remote DELETED files cleaned: " + oldSize + " => " + newSize);
         this.saveMap();
-
-        LOGGER.info("FileMap stale files cleaned: " + oldSize + " => " + newSize);
     }
 
     /**

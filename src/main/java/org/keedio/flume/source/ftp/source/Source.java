@@ -85,10 +85,10 @@ public class Source extends AbstractSource implements Configurable, PollableSour
     public PollableSource.Status process() throws EventDeliveryException {
 
         try {
-            LOGGER.info("Processing: (dir: " + keedioSource.getDirectoryserver() + "; files: "
-                        + keedioSource.getFileList().size() + ", " + keedioSource.getExistFileList().size());
-
             keedioSource.getExistFileList().clear();
+            LOGGER.info("Processing: (dir: " + keedioSource.getDirectoryserver() + "; files: "
+                        + keedioSource.getFileList().size() + ")");
+
             discoverElements(keedioSource, keedioSource.getDirectoryserver(), "", 0);
             keedioSource.cleanList(); //clean list according existing actual files
 
@@ -204,8 +204,8 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                             LOGGER.info("Shrinked: " + elementName + ", diff: " + diff);
 
                             keedioSource.getFileList().remove(dirToList + "/" + elementName); //will be rediscovered as new file
-                            keedioSource.saveMap();
                             LOGGER.info("FileMap file removed: " + dirToList + "/" + elementName);
+                            keedioSource.saveMap();
 
                             continue;
                         } else { // diff > 0
@@ -226,8 +226,8 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                         boolean success = inputStream != null && keedioSource.particularCommand(); //mandatory if FTPClient
                         if (success) {
                             keedioSource.getFileList().put(dirToList + "/" + elementName, keedioSource.getObjectSize(element));
+                            LOGGER.info("FileMap file added: " + dirToList + "/" + elementName);
                             keedioSource.saveMap();
-                            LOGGER.info("KeedioSourceFileList file added: " + dirToList + "/" + elementName);
 
                             if (position != 0) {
                                 sourceCounter.incrementCountModProc();
@@ -258,7 +258,6 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                     continue;
                 }
                 keedioSource.changeToDirectory(parentDir);
-
             }
         }
     }

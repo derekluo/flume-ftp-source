@@ -89,7 +89,7 @@ public class FTPSource extends KeedioSource<FTPFile> {
      * @param String destination
      */
     public void changeToDirectory(String dir) throws IOException {
-            ftpClient.changeWorkingDirectory(dir);
+        ftpClient.changeWorkingDirectory(dir);
     }
 
     @Override
@@ -98,10 +98,11 @@ public class FTPSource extends KeedioSource<FTPFile> {
      * @param current directory
      */
     public List<FTPFile> listElements(String dir) throws IOException {
-        List<FTPFile> list = new ArrayList<>();
+        assertServerOK();
+
         FTPFile[] subFiles = getFtpClient().listFiles(dir);
-        list = Arrays.asList(subFiles);
-        return list;
+
+        return Arrays.asList(subFiles);
     }
 
     @Override
@@ -201,12 +202,24 @@ public class FTPSource extends KeedioSource<FTPFile> {
      */
     @Override
     public String getDirectoryserver() throws IOException {
-        String printWorkingDirectory = "";
-        printWorkingDirectory = getFtpClient().printWorkingDirectory();
+        String printWorkingDirectory = getFtpClient().printWorkingDirectory();
+
         if(null == printWorkingDirectory) {
             throw new IOException("printworkingdirectory is NULL.");
         }
+
         return printWorkingDirectory;
+    }
+
+    /**
+     *
+     */
+    public void assertServerOK() throws IOException {
+        String printWorkingDirectory = getFtpClient().printWorkingDirectory();
+
+        if(null == printWorkingDirectory) {
+            throw new IOException("printworkingdirectory is NULL.");
+        }
     }
 
     /**
