@@ -271,8 +271,9 @@ public abstract class KeedioSource<T> {
         Path file1 = makeLocationFile();
         try {
             if (Files.exists(file1)) {
-                setFileList(loadMap(file1.toString()));
                 LOGGER.info("FileMap founded: " + file1.toString());
+
+                setFileList(loadMap(file1.toString()));
             } else {
                 LOGGER.info("FileMap NOT founded: " + file1);
             }
