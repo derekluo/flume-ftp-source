@@ -30,21 +30,21 @@ import java.util.*;
  *
  * @author Luis Lázaro lalazaro@keedio.com
  * Keedio
- 
+
  /**
  * Abstract class for sources that need a network connection before process.
  * @param <T>
  */
 public abstract class KeedioSource<T> {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(KeedioSource.class);
-      
+
     private Map<String, Long> fileList = new HashMap<>();
     private Set<String> existFileList = new HashSet<>();
     private Path pathTohasmap = Paths.get("");
     private Path hasmap = Paths.get("");
-    private Path absolutePath = Paths.get("");   
-    
+    private Path absolutePath = Paths.get("");
+
     /**
      *
      */
@@ -103,13 +103,13 @@ public abstract class KeedioSource<T> {
     /**
      *
      */
-    protected String dirToList;    
+    protected String dirToList;
 
     /**
      *
      */
-    protected Integer chunkSize;     
-   
+    protected Integer chunkSize;
+
     /**
      *
      * @return
@@ -211,7 +211,7 @@ public abstract class KeedioSource<T> {
      * @throws IOException
      */
     public abstract void setFileType(int fileType) throws IOException;
-   
+
     /**
      * @void save map of file's names proccesed
      */
@@ -221,6 +221,8 @@ public abstract class KeedioSource<T> {
             try (ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
                 out.writeObject((HashMap) getFileList());
             }
+
+            LOGGER.info("Map file saved, " + getAbsolutePath() + ", " + getFileList().size());
         } catch (FileNotFoundException e) {
             LOGGER.error("Error saving map File", e);
         } catch (IOException e) {
@@ -229,7 +231,7 @@ public abstract class KeedioSource<T> {
     }
 
     /**
-     * @return HashMap<String,Long> 
+     * @return HashMap<String,Long>
      * @param name
      * @throws java.lang.ClassNotFoundException
      * @throws java.io.IOException
@@ -240,6 +242,8 @@ public abstract class KeedioSource<T> {
         try (ObjectInputStream in = new ObjectInputStream(fileIn)) {
             map = (HashMap) in.readObject();
         }
+
+        LOGGER.info("Map file loaded: " + name + "," + map.size());
         return map;
     }
 
@@ -294,7 +298,7 @@ public abstract class KeedioSource<T> {
     }
 
     /**
-     * @void 
+     * @void
      * @param server the server to set
      */
     public void setServer(String server) {
@@ -309,7 +313,7 @@ public abstract class KeedioSource<T> {
     }
 
     /**
-     * @void 
+     * @void
      * @param user the user to set
      */
     public void setUser(String user) {
@@ -457,7 +461,7 @@ public abstract class KeedioSource<T> {
     }
 
     /**
-     * 
+     *
      * @return  path
      */
     public Path getHasmap() {
@@ -498,10 +502,10 @@ public abstract class KeedioSource<T> {
     public void setConnected(boolean connected) {
         this.connected = connected;
     }
-    
+
     /**
-     * 
-     * @return Path of file and folder  
+     *
+     * @return Path of file and folder
      */
     public Path makeLocationFile(){
       hasmap = Paths.get(getFileName());
@@ -538,6 +542,6 @@ public abstract class KeedioSource<T> {
         this.chunkSize = chunkSize;
     }
 
-      
-    
+
+
 } //endclass

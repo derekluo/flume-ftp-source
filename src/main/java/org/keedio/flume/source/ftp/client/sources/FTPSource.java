@@ -88,8 +88,8 @@ public class FTPSource extends KeedioSource<FTPFile> {
      * @return void
      * @param String destination
      */
-    public void changeToDirectory(String dir) throws IOException {        
-            ftpClient.changeWorkingDirectory(dir);        
+    public void changeToDirectory(String dir) throws IOException {
+            ftpClient.changeWorkingDirectory(dir);
     }
 
     @Override
@@ -203,6 +203,9 @@ public class FTPSource extends KeedioSource<FTPFile> {
     public String getDirectoryserver() throws IOException {
         String printWorkingDirectory = "";
         printWorkingDirectory = getFtpClient().printWorkingDirectory();
+        if(null == printWorkingDirectory) {
+            throw new IOException("printworkingdirectory is NULL.");
+        }
         return printWorkingDirectory;
     }
 

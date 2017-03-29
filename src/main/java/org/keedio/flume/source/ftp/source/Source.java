@@ -86,8 +86,8 @@ public class Source extends AbstractSource implements Configurable, PollableSour
     public PollableSource.Status process() throws EventDeliveryException {
 
         try {
-            LOGGER.info("Actual dir:  " + keedioSource.getDirectoryserver() + " files: "
-                    + keedioSource.getFileList().size());
+            LOGGER.info("Actual dir:  " + keedioSource.getDirectoryserver() + ", files: "
+                        + keedioSource.getFileList().size() + ", " + keedioSource.getExistFileList().size());
 
             discoverElements(keedioSource, keedioSource.getDirectoryserver(), "", 0);
             keedioSource.cleanList(); //clean list according existing actual files
