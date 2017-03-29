@@ -225,9 +225,6 @@ public class Source extends AbstractSource implements Configurable, PollableSour
 
                         boolean success = inputStream != null && keedioSource.particularCommand(); //mandatory if FTPClient
                         if (success) {
-                            keedioSource.getFileList().put(dirToList + "/" + elementName, keedioSource.getObjectSize(element));
-                            LOGGER.info("FileMap file added: " + dirToList + "/" + elementName);
-                            keedioSource.saveMap();
 
                             if (position != 0) {
                                 sourceCounter.incrementCountModProc();
@@ -235,8 +232,12 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                                 sourceCounter.incrementFilesProcCount();
                             }
 
-                            LOGGER.info("Processed:  " + elementName + " ,total files: " + this.keedioSource.getFileList().size() + "\n");
+                            long elementSize = keedioSource.getObjectSize(element);
+                            String elementPath = dirToList + "/" + elementName;
 
+                            keedioSource.getFileList().put(elementPath, elemenSize);
+                            LOGGER.info("FileMap file upserted: " + elementPath + ", " + elementSize);
+                            keedioSource.saveMap();
                         } else {
                             handleProcessError(elementName);
                         }
