@@ -261,7 +261,9 @@ public abstract class KeedioSource<T> {
         int newSize = getFileList().size();
 
         LOGGER.info("FileMap remote DELETED files cleaned: " + oldSize + " => " + newSize);
-        this.saveMap();
+        if(newSize != oldSize) {
+            this.saveMap();
+        }
     }
 
     /**
