@@ -235,7 +235,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
                             long elementSize = keedioSource.getObjectSize(element);
                             String elementPath = dirToList + "/" + elementName;
 
-                            keedioSource.getFileList().put(elementPath, elemenSize);
+                            keedioSource.getFileList().put(elementPath, elementSize);
                             LOGGER.info("FileMap file upserted: " + elementPath + ", " + elementSize);
                             keedioSource.saveMap();
                         } else {
