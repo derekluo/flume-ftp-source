@@ -7,6 +7,7 @@ import org.keedio.flume.source.ftp.client.KeedioSource;
 
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPClientConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -231,10 +232,10 @@ public class FTPSource extends KeedioSource<FTPFile> {
         if(null == this.ftpClient) {
             // https://issues.apache.org/jira/browse/NET-553
             FTPClientConfig conf = new FTPClientConfig(FTPClientConfig.SYST_UNIX);
-            config.setUnparseableEntries(true);
+            conf.setUnparseableEntries(true);
 
-            this.ftpClient = new FtpClient();
-            this.ftpClient.configure(config);
+            this.ftpClient = new FTPClient();
+            this.ftpClient.configure(conf);
 
             this.ftpClient.setControlEncoding("UTF-8");
             this.ftpClient.setAutodetectUTF8(true);
