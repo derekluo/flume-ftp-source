@@ -220,6 +220,8 @@ public class FTPSource extends KeedioSource<FTPFile> {
         if(null == printWorkingDirectory) {
             throw new IOException("printworkingdirectory is NULL.");
         }
+
+        LOGGER.info("Assert Server OK.")
     }
 
     /**
