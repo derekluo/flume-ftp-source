@@ -36,7 +36,6 @@ public class FTPSource extends KeedioSource<FTPFile> {
     public boolean connect() {
         setConnected(true);
         try {
-            getFtpClient()
             getFtpClient().connect(getServer(), getPort());
             int replyCode = getFtpClient().getReplyCode();
 
@@ -222,7 +221,7 @@ public class FTPSource extends KeedioSource<FTPFile> {
             throw new IOException("printworkingdirectory is NULL.");
         }
 
-        LOGGER.info("Assert Server OK.")
+        LOGGER.info("Assert Server OK.");
     }
 
     /**
