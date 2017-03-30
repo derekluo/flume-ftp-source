@@ -26,7 +26,7 @@ import org.apache.commons.net.ftp.FTP;
 public class FTPSource extends KeedioSource<FTPFile> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FTPSource.class);
-    private FTPClient ftpClient = new FTPClient();
+    private FTPClient ftpClient = null;
 
     /**
      * @return boolean Opens a Socket connected to a server and login to return
@@ -36,6 +36,7 @@ public class FTPSource extends KeedioSource<FTPFile> {
     public boolean connect() {
         setConnected(true);
         try {
+            getFtpClient()
             getFtpClient().connect(getServer(), getPort());
             int replyCode = getFtpClient().getReplyCode();
 
@@ -228,6 +229,18 @@ public class FTPSource extends KeedioSource<FTPFile> {
      * @return the ftpClient
      */
     public FTPClient getFtpClient() {
+        if(null == this.ftpClient) {
+            // https://issues.apache.org/jira/browse/NET-553
+            FTPClientConfig conf = new FTPClientConfig(FTPClientConfig.SYST_UNIX);
+            config.setUnparseableEntries(true);
+
+            this.ftpClient = new FtpClient();
+            this.ftpClient.configure(config);
+
+            this.ftpClient.setControlEncoding("UTF-8");
+            this.ftpClient.setAutodetectUTF8(true);
+        }
+
         return ftpClient;
     }
 
