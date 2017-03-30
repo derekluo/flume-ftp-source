@@ -110,6 +110,9 @@ public abstract class KeedioSource<T> {
      */
     protected Integer chunkSize;
 
+
+    protected Integer fileStaleDates;
+
     /**
      *
      * @return
@@ -549,6 +552,12 @@ public abstract class KeedioSource<T> {
         this.chunkSize = chunkSize;
     }
 
+    public Integer getFileStaleDates() {
+        return this.fileStaleDates;
+    }
 
+    public void setFileStaleDates(Integer fileStaleDates) {
+        this.fileStaleDates = fileStaleDates;
+    }
 
 } //endclass

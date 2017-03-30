@@ -199,6 +199,7 @@ public class Source extends AbstractSource implements Configurable, PollableSour
 
                         if (0 == diff) {
                             LOGGER.info("Same: " + elementName);
+                            //TODO resole file stale issues
                             continue;
                         } else if (diff < 0) {
                             LOGGER.info("Shrinked: " + elementName + ", diff: " + diff);

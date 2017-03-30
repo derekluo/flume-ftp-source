@@ -24,6 +24,7 @@ public class SourceFactory {
     private static final String FOLDER_DEFAULT = System.getProperty("java.io.tmpdir");
     private static final Integer CHUNKSIZE_DEFAULT = 1024;
     private static final String FILENAME_DEFAULT = "default_file_track_status.ser";
+    private static final Integer FILE_STALE_DATES = 14; //2 WEEKS
 
     /**
      * Create KeedioSource
@@ -89,5 +90,6 @@ public class SourceFactory {
         keedioSource.setFileName(context.getString("file.name", FILENAME_DEFAULT));
         keedioSource.setFlushLines(context.getBoolean("flushlines", FLUSHLINE_DEFAULT));
         keedioSource.setChunkSize(context.getInteger("chunk.size", CHUNKSIZE_DEFAULT));
+        keedioSource.setFileStaleDates(context.getInteger("file.stale.dates", FILE_STALE_DATES));
     }
 }
